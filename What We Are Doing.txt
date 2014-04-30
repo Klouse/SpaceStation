@@ -1,0 +1,37 @@
+World:
+Stars/Skybox
+Shaders
+Object loading
+Dynamic Lighting
+Camera(s)
+Map
+Particles
+Lens Flare
+Emergency Shield
+
+Models:
+Station
+Ship
+Comet
+Sun
+Planet
+Player???
+
+Interactions:
+Moving doors
+Player Controls
+Make ship fly
+
+Sound:
+Effects
+Music
+
+Menu:
+Instructions
+
+
+Widgets:
+lights
+planet size
+gravity
+
