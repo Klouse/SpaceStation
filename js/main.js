@@ -64,6 +64,21 @@ app.main = {
 			},
 			
 	setupWorld: function() {
+		var p_geo = new THREE.SphereGeometry(50, 32, 32);
+		var p_mat = new THREE.MeshPhongMaterial({color:0xff0000});
+		var planet = new THREE.Mesh(p_geo, p_mat);
+		planet.receiveShadow = true;
+		//this.scene.add(planet);
+		
+		var comet1 = new app.Comet();
+		comet1.setPosition(20, 0 ,0);
+		comet1.addToScene(this.scene);
+		
+		var comet2 = new app.Comet();
+		comet2.setPosition(-20, 0 ,0);
+		comet2.addToScene(this.scene);
+		
+		/*
 				var geo = new THREE.PlaneGeometry(2000, 2000, 40, 40);
 				var mat = new THREE.MeshPhongMaterial({color: 0x9db3b5, overdraw: true});
 				var floor = new THREE.Mesh(geo, mat);
@@ -101,6 +116,7 @@ app.main = {
 				city.castShadow = true;
 				city.receiveShadow = true;
 				this.scene.add(city);
+				*/
 
 				// the "sun"
 				var light = new THREE.DirectionalLight(0xf9f1c2, 1);
