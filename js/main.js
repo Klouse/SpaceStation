@@ -18,6 +18,8 @@ app.main = {
 		
 		planet:undefined,
 		comets: [],
+		cometTimer: 0,
+		nextComet: 100,
 		
 		
     	init : function() {
@@ -37,12 +39,27 @@ app.main = {
 			this.drawPauseScreen();
 			return;
 		 }
+		 
+		 this.cometTimer++;
+		 if(this.cometTimer >= this.nextComet){
+			this.spawnComet();
+			this.cometTimer = 0;
+			this.nextComet = Math.random() * 100 + 100;
+		 }
 	
 		// UPDATE
 		//this.controls.update(this.dt);
 		this.planet.rotation.y += 0.002;
 		for(var i = 0; i < this.comets.length; i++){
-			this.comets[i].update();
+			var comet = this.comets[i];
+			comet.update();
+			if(comet.getPosition().x < -100){
+				comet.removeFromScene(this.scene);
+			}
+			
+			this.comets = this.comets.filter(function(o){
+				if(!o.dead) return o;
+			});
 		}
 		
 		// DRAW	
@@ -64,10 +81,10 @@ app.main = {
 				this.renderer.shadowMapEnabled = true;
 				document.body.appendChild(this.renderer.domElement );
 
-				//this.controls = new THREE.FirstPersonControls(this.camera);
-				//this.controls.movementSpeed = 100;
-				//this.controls.lookSpeed = 0.1;
-				//this.controls.autoForward = false;
+				this.controls = new THREE.FirstPersonControls(this.camera);
+				this.controls.movementSpeed = 100;
+				this.controls.lookSpeed = 0.1;
+				this.controls.autoForward = false;
 			},
 			
 	setupWorld: function() {
@@ -167,6 +184,14 @@ app.main = {
 				var sunlight = new THREE.PointLight(0xffff00, 2);
 				sunlight.position.set(-150, 0, -500);
 				this.scene.add(sunlight);
+	},
+	
+	spawnComet: function(){
+		console.log("Comet Spawned");
+		var comet = new app.Comet();
+		comet.setPosition(600, 0, 0);
+		comet.addToScene(this.scene);
+		this.comets.push(comet);
 	},
 	
 	drawPauseScreen: function(){
