@@ -46,7 +46,12 @@ app.Comet = (function(){
 	p.addToScene = function(scene){
 		scene.add(this.mesh);
 		scene.add(this.pSystem);
-	}
+	};
+	
+	p.update = function(){
+		this.mesh.position.x -= 1;
+		this.pSystem.position.x -= 1;
+	};
 	
 	return Comet;
-}())
+}());
