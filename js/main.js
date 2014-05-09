@@ -124,66 +124,26 @@ app.main = {
 		comet2.setPosition(800, 200 ,0);
 		comet2.addToScene(this.scene);
 		this.comets.push(comet2);
-		
-		/*
-				var geo = new THREE.PlaneGeometry(2000, 2000, 40, 40);
-				var mat = new THREE.MeshPhongMaterial({color: 0x9db3b5, overdraw: true});
-				var floor = new THREE.Mesh(geo, mat);
-				floor.rotation.x = -0.5 * Math.PI;
-				floor.receiveShadow = true;
-				this.scene.add(floor);
-			
-				// make a base cube geometry for all of the buildings
-				var geometry = new THREE.CubeGeometry( 1, 1, 1 );
-				// move pivot point to bottom of cube instead of center
-				geometry.applyMatrix( new THREE.Matrix4().makeTranslation( 0, 0.5, 0 ) );
-			
-
 				
-				var cityGeometry = new THREE.Geometry();
-				for (var i = 0; i < 300; i++) {
-					var building = new THREE.Mesh(geometry.clone());
-					building.position.x = Math.floor( Math.random() * 200 - 100 ) * 4;
-					building.position.z = Math.floor( Math.random() * 200 - 100 ) * 4;
-					building.scale.x  = Math.pow(Math.random(), 2) * 50 + 10;
-					building.scale.y  = Math.pow(Math.random(), 3) * building.scale.x * 8 + 8;
-					building.scale.z  = building.scale.x;
-					// merge!
-					// we have a single geometry, so it renders faster
-					THREE.GeometryUtils.merge(cityGeometry, building);
-				}
+		// the "sun"
+		var light = new THREE.DirectionalLight(0xf9f1c2, 0.5);
+		light.position.set(450, 100, 50);
+		light.castShadow = true;
+		light.shadowMapWidth = 2048;
+		light.shadowMapHeight = 2048;
+		var d = 1000;
+		// "near" and "far" of shadows and camera
+		light.shadowCameraLeft = d;
+		light.shadowCameraRight = -d;
+		light.shadowCameraTop = d;
+		light.shadowCameraBottom = -d;
+		light.shadowCameraFar = 2500;
+		this.scene.add(light);
 				
-				
-				var material = new THREE.MeshPhongMaterial({color: 0xffcccc});
-				// uncomment these for a transparent city
-				//material.transparent = true;
-                //material.opacity = 0.8;
-                
-				var city = new THREE.Mesh(cityGeometry, material);
-				city.castShadow = true;
-				city.receiveShadow = true;
-				this.scene.add(city);
-				*/
-				
-				// the "sun"
-				var light = new THREE.DirectionalLight(0xf9f1c2, 0.5);
-				light.position.set(450, 100, 50);
-				light.castShadow = true;
-				light.shadowMapWidth = 2048;
-				light.shadowMapHeight = 2048;
-				var d = 1000;
-				// "near" and "far" of shadows and camera
-				light.shadowCameraLeft = d;
-				light.shadowCameraRight = -d;
-				light.shadowCameraTop = d;
-				light.shadowCameraBottom = -d;
-				light.shadowCameraFar = 2500;
-				this.scene.add(light);
-				
-				// the "sun"
-				var sunlight = new THREE.PointLight(0xffff00, 2);
-				sunlight.position.set(-150, 0, -500);
-				this.scene.add(sunlight);
+		// the "sun"
+		var sunlight = new THREE.PointLight(0xffff00, 2);
+		sunlight.position.set(-150, 0, -500);
+		this.scene.add(sunlight);
 	},
 	
 	spawnComet: function(){
