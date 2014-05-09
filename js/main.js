@@ -21,6 +21,11 @@ app.main = {
 		cometTimer: 0,
 		nextComet: 100,
 		
+		textureFlare0:undefined,
+		textureFlare2:undefined,
+		textureFlare3:undefined,
+		
+		
 		
     	init : function() {
 			console.log('init called');
@@ -144,6 +149,57 @@ app.main = {
 		var sunlight = new THREE.PointLight(0xffff00, 2);
 		sunlight.position.set(-150, 0, -500);
 		this.scene.add(sunlight);
+		
+		//lens flare
+		this.textureFlare0 = THREE.ImageUtils.loadTexture("textures/lensflare0.png");
+		this.textureFlare2 = THREE.ImageUtils.loadTexture("textures/lensflare2.png");
+		this.textureFlare3 = THREE.ImageUtils.loadTexture("textures/lensflare3.png");
+		
+		this.addLight(0.55, 0.9, 0.5, -150, 0, -500);
+		
+		
+	},
+	
+	addLight: function(h, s, l, x, y, z){
+		var light = new THREE.PointLight(0xffffff, 1.5, 4500);
+		light.color.setHSL(h, s, l);
+		light.position.set(x, y, z);
+		this.scene.add(light);
+		
+		var flareColor = new THREE.Color(0xffffff);
+		flareColor.setHSL(h, s, l + 0.5);
+		
+		var lensFlare = new THREE.LensFlare(this.textureFlare0, 700, 0.0, THREE.AdditiveBlending, flareColor);
+		
+		lensFlare.add(this.textureFlare2, 512, 0.0, THREE.AdditiveBlending);
+		lensFlare.add(this.textureFlare2, 512, 0.0, THREE.AdditiveBlending);
+		lensFlare.add(this.textureFlare2, 512, 0.0, THREE.AdditiveBlending);
+		lensFlare.add(this.textureFlare3, 60, 0.6, THREE.AdditiveBlending);
+		lensFlare.add(this.textureFlare3, 70, 0.7, THREE.AdditiveBlending);
+		lensFlare.add(this.textureFlare3, 120, 0.9, THREE.AdditiveBlending);
+		lensFlare.add(this.textureFlare3, 70, 1.0, THREE.AdditiveBlending);
+		
+		lensFlare.customUpdateCallback = this.lensFlareUpdateCallback;
+		lensFlare.position = light.position;
+		this.scene.add(lensFlare);
+		
+	},
+	
+	lensFlareUpdateCallback: function(object){
+		var f, fl = object.lensFlares.length;
+		var flare;
+		var vecX = -object.positionScreen.x * 2;
+		var vecY = -object.positionScreen.y * 2;
+		
+		for(f = 0; f < fl; f++){
+			flare = object.lensFlares[f];
+			flare.x = object.positionScreen.x + vecX * flare.distance;
+			flare.y = object.positionScreen.y * vecY * flare.distance;
+			flare.rotation = 0;
+		}
+		
+		object.lensFlares[2].y += 0.025;
+		object.lensFlares[3].rotation = object.positionScreen.x * 0.5 + THREE.Math.degToRad(45);
 	},
 	
 	spawnComet: function(){

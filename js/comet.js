@@ -23,7 +23,7 @@ app.Comet = (function(){
 	};
 	
 	p.setUpParticleSystem = function(){
-		vertexTexture = THREE.ImageUtils.loadTexture('textures/gradient_comet_vertex');
+		//vertexTexture = THREE.ImageUtils.loadTexture('textures/gradient_comet_vertex.jpg');
 		this.pSystem = new THREE.ParticleSystem(new THREE.SphereGeometry(15, 16, 16));
 	}
 	
