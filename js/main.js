@@ -53,7 +53,7 @@ app.main = {
 		 }
 	
 		// UPDATE
-		//this.controls.update(this.dt);
+		this.controls.update(this.dt);
 		this.planet.rotation.y += 0.002;
 		for(var i = 0; i < this.comets.length; i++){
 			var comet = this.comets[i];
@@ -101,6 +101,35 @@ app.main = {
 		this.planet.position.y = -50;
 		this.planet.position.z = 300;
 		this.scene.add(this.planet);
+		
+		var manager = new THREE.LoadingManager();
+		manager.onProgress = function ( item, loaded, total ) {
+			console.log( item, loaded, total );
+		};
+		
+		var planet_t = new THREE.Texture();
+		
+		var loader = new THREE.ImageLoader(manager);
+		loader.load('textures/planet_uv.jpg', function(image){
+			planet_t.image = image;
+			planet_t.needsUpdate = true;
+			
+		});
+		
+		
+		var loader = new THREE.OBJLoader(manager);
+		
+		var self = this;
+		loader.load('Models/planet.obj', function(object){
+			object.traverse(function(child){
+				if(child instanceof THREE.Mesh){
+					child.material.map = planet_t;
+				}
+			});
+			
+			object.position.y = -80;
+			self.scene.add(object);
+		});
 		
 		var m_geo = new THREE.SphereGeometry(50, 32, 32);
 		var m_mat = new THREE.MeshPhongMaterial({color:0x444444});
