@@ -1,4 +1,4 @@
-// city.js
+// main.js
 "use strict";
 // if app exists use the existing copy
 // else create a new object literal

@@ -1,0 +1,13 @@
+{
+"planets":[
+	{"name":"Mercury", "diameter": 4878, "diameterScale":0.382, "distance":0.39, "orbPeriod":0.24, "eccentricity":0.2056, "rotPeriod":58.65, "tempMin":-180, "tempMax":430, "density":5.43, "numMoons":0}
+	{"name":"Venus", diameter":12104, "diameterScale": 0.949, "distance":0.72, "orbPeriod":0.62, "eccentricity":0.0068, "rotPeriod":-243, "tempMin":465, "tempMax":465, "density":5.25, "numMoons":0}
+	{"name":"Earth", diameter":12756, "diameterScale": 1, "distance":1, "orbPeriod":1, "eccentricity":0.0167, "rotPeriod":1, "tempMin":-89, "tempMax":58, "density":5.52, "numMoons":1}
+	{"name":"Mars", diameter":6787, "diameterScale": 0.532, "distance":1.52, "orbPeriod":1.88, "eccentricity":0.0934, "rotPeriod":1.03, "tempMin":-82, "tempMax":0, "density":3.93, "numMoons":2}
+	{"name":"Jupiter", diameter":142800, "diameterScale": 11.209, "distance":5.20, "orbPeriod":11.86, "eccentricity":0.0483, "rotPeriod":0.41, "tempMin":-150, "tempMax":-150, "density":1.33, "numMoons":63}
+	{"name":"Saturn", diameter":120000, "diameterScale": 9.44, "distance":9.54, "orbPeriod":29.46, "eccentricity":0.0560, "rotPeriod":0.44, "tempMin":-170, "tempMax":-170, "density":0.71, "numMoons":62}
+	{"name":"Uranus", diameter":51118, "diameterScale": 4.007, "distance":19.18, "orbPeriod":84.01, "eccentricity":0.0461, "rotPeriod":-0.72, "tempMin":-200, "tempMax":-200, "density":1.24, "numMoons":27}
+	{"name":"Neptune", diameter":49528, "diameterScale": 3.883, "distance":30.06, "orbPeriod":164.8, "eccentricity":0.0097, "rotPeriod":0.72, "tempMin":-210, "tempMax":-210, "density":1.67, "numMoons":13}
+	{"name":"Pluto", diameter":2300, "diameterScale": 0.180, "distance":39.44, "orbPeriod":247.7, "eccentricity":0.2482, "rotPeriod":-6.38, "tempMin":-220, "tempMax":-220, "density":2.03, "numMoons":5}
+]
+}
