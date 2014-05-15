@@ -33,6 +33,7 @@ app.keydown = [];
 	queue.loadFile("js/lib/three.min.js");
 	queue.loadFile("js/loaders/OBJLoader.js");
 	queue.loadFile("js/lib/FirstPersonControls.js");
+	queue.loadFile("js/planet.js");
 	queue.loadFile("js/comet.js");
 	queue.loadFile("js/main.js");
 	
@@ -65,12 +66,12 @@ app.keydown = [];
 			
 			// event listeners
 			window.addEventListener("keydown",function(e){
-				console.log("keydown=" + e.keyCode);
+				//console.log("keydown=" + e.keyCode);
 				app.keydown[e.keyCode] = true;
 			});
 				
 			window.addEventListener("keyup",function(e){
-				console.log("keyup=" + e.keyCode);
+				//console.log("keyup=" + e.keyCode);
 				app.keydown[e.keyCode] = false;
 			});
 			

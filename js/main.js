@@ -17,6 +17,7 @@ app.main = {
 		controls: undefined,
 		
 		planet:undefined,
+		planets: [],
 		comets: [],
 		cometTimer: 0,
 		nextComet: 100,
@@ -29,9 +30,32 @@ app.main = {
 		
     	init : function() {
 			console.log('init called');
+			this.loadData();
 			this.setupThreeJS();
 			this.setupWorld();
 			this.update();
+			
+			var self = this;
+			$(document).mousedown(function(e){
+				e.preventDefault();
+			
+				var projector = new THREE.Projector();
+			
+				var vector = new THREE.Vector3((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1, 0.5);
+				
+				projector.unprojectVector(vector, self.camera);
+			
+				var raycaster = new THREE.Raycaster(self.camera.position, vector.sub(self.camera.position).normalize());
+				var meshes = [];
+				for(var i = 0; i < self.planets.length; i++){
+					meshes.push(self.planets[i].getMesh());
+				}
+				var intersects = raycaster.intersectObjects(meshes);
+				console.log(intersects);
+				if(intersects.length > 0){
+					intersects[0].object.material.color = new THREE.Color(0xff0000);
+				}
+			});
     	},
     	
     	
@@ -47,14 +71,14 @@ app.main = {
 		 
 		 this.cometTimer++;
 		 if(this.cometTimer >= this.nextComet){
-			this.spawnComet();
+			//this.spawnComet();
 			this.cometTimer = 0;
 			this.nextComet = Math.random() * 100 + 100;
 		 }
 	
 		// UPDATE
 		this.controls.update(this.dt);
-		this.planet.rotation.y += 0.002;
+		//this.planet.rotation.y += 0.002;
 		for(var i = 0; i < this.comets.length; i++){
 			var comet = this.comets[i];
 			comet.update();
@@ -70,6 +94,16 @@ app.main = {
 		// DRAW	
 		this.renderer.render(this.scene, this.camera);
 		
+	},
+	
+	loadData: function(){
+		var self = this;
+		var data = $.getJSON("data/planets.json", function(json){
+			self.setUpPlanets(json);
+		});
+		//console.log(data);
+		
+		//this.setUpPlanets(data.responseJSON);
 	},
 	
 	setupThreeJS: function() {
@@ -90,9 +124,19 @@ app.main = {
 				this.controls.movementSpeed = 100;
 				this.controls.lookSpeed = 0.1;
 				this.controls.autoForward = false;
-			},
+	},
+	
+	setUpPlanets: function(data){
+		var planetData = data.planets;
+		for(var i = 0; i < planetData.length; i++){
+			var p = new app.Planet(planetData[i]);
+			p.addToScene(this.scene);
+			this.planets.push(p);
+		}
+	},
 			
 	setupWorld: function() {
+		/*
 		var p_geo = new THREE.SphereGeometry(100, 32, 32);
 		var p_mat = new THREE.MeshPhongMaterial({color:0xff0000});
 		this.planet = new THREE.Mesh(p_geo, p_mat);
@@ -104,7 +148,7 @@ app.main = {
 		
 		var manager = new THREE.LoadingManager();
 		manager.onProgress = function ( item, loaded, total ) {
-			console.log( item, loaded, total );
+			//console.log( item, loaded, total );
 		};
 		
 		var planet_t = new THREE.Texture();
@@ -115,8 +159,9 @@ app.main = {
 			planet_t.needsUpdate = true;
 			
 		});
+		*/
 		
-		
+		/*
 		var loader = new THREE.OBJLoader(manager);
 		
 		var self = this;
@@ -139,25 +184,15 @@ app.main = {
 		moon.position.y = 0;
 		moon.position.z = 100;
 		this.scene.add(moon);
+		*/
 		
-		var s_geo = new THREE.SphereGeometry(200, 32, 32);
+		var s_geo = new THREE.SphereGeometry(100, 32, 32);
 		var s_mat = new THREE.MeshBasicMaterial({color:0xffff00});
 		var sun = new THREE.Mesh(s_geo, s_mat);
-		sun.position.x = -150;
+		sun.position.x = 0;
 		sun.position.y = 0;
-		sun.position.z = -500;
+		sun.position.z = 0;
 		this.scene.add(sun);
-		
-		
-		var comet1 = new app.Comet();
-		comet1.setPosition(500, 0 ,0);
-		comet1.addToScene(this.scene);
-		this.comets.push(comet1);
-		
-		var comet2 = new app.Comet();
-		comet2.setPosition(800, 200 ,0);
-		comet2.addToScene(this.scene);
-		this.comets.push(comet2);
 				
 		// the "sun"
 		var light = new THREE.DirectionalLight(0xf9f1c2, 0.5);
@@ -232,11 +267,66 @@ app.main = {
 	},
 	
 	spawnComet: function(){
-		console.log("Comet Spawned");
+		//console.log("Comet Spawned");
 		var comet = new app.Comet();
 		comet.setPosition(600, 0, 0);
 		comet.addToScene(this.scene);
 		this.comets.push(comet);
+	},
+	
+	doMouseDown: function(e){
+	
+			e.preventDefault();
+			
+			var projector = new THREE.Projector();
+			
+			var vector = new THREE.Vector3((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1, 0.5);
+			
+			console.log(this.camera);
+			projector.unprojectVector(vector, this.camera);
+			
+			var raycaster = new THREE.Raycaster(this.camera.position, vector.sub(this.camera.position).normalize());
+			var meshes = [];
+			for(var i = 0; i < this.planets.length; i++){
+				meshes.push(this.planets[i].getMesh());
+			}
+			var intersects = raycaster.intersectObjects([]);
+			//if(intersects.length > 0){
+				//intersects[0].object.material.color = new THREE.Color(0xff0000);
+			//}
+		/*
+		var projector = new THREE.Projector(); 
+		
+		var vector = new THREE.Vector3(( e.clientX / window.innerWidth ) * 2 - 1, -( e.clientY / window.innerHeight ) * 2 + 1, 0.5); 
+		console.log("Vector is x=" + vector.x + ",y=" + vector.y + ",z=" + vector.z);
+ 
+		// 2D point converted to 3D point in world 
+		projector.unprojectVector(vector, this.camera); 
+		console.log("Unprojected Vector x=" + vector.x + ",y=" + vector.y + ",z=" + vector.z); 
+ 
+		// cast a ray from the camera to the 3D point we clicked on 
+		var raycaster = new THREE.Raycaster(this.camera.position, 
+		vector.sub(this.camera.position).normalize()); 
+ 
+		// an array of objects we are checking for intersections 
+		// you’ll need to put your own objects here
+		var meshes = [];
+		for(var i = 0; i < this.planets.length; i++){
+			meshes.push(this.planets[i].getMesh());
+		}
+		var intersects = raycaster.intersectObjects(meshes); 
+ 
+		if (intersects.length > 0) { 
+			intersects[ 0 ].object.material.transparent = true; 
+			intersects[ 0 ].object.material.opacity = 0.3; 
+			// debug info 
+			console.log("distance=" + intersects[0].distance); 
+			console.log("point.x=" + intersects[0].point.x); 
+			console.log("point.y=" + intersects[0].point.y); 
+			console.log("face=" + intersects[0].face); 
+			console.log("faceIndex=" + intersects[0].faceIndex); 
+		}
+		*/
 	},
 	
 	drawPauseScreen: function(){
