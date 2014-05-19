@@ -31,6 +31,7 @@ app.keydown = [];
 	queue.on("fileload", handleFileLoad, this);
 	queue.on("complete", complete, this);
 	queue.loadFile("js/lib/three.min.js");
+	queue.loadFile("js/lib/tween.min.js");
 	queue.loadFile("js/loaders/OBJLoader.js");
 	queue.loadFile("js/lib/FirstPersonControls.js");
 	queue.loadFile("js/planet.js");

@@ -12,6 +12,7 @@ app.Planet = (function(){
 		this.setScale(scaledDiam);
 		var scaledX = 400 * data.distance;
 		this.setPosition(scaledX, 0, 0);
+		this.cameraPoint = new THREE.Vector3(this.getPosition().x, this.getPosition().y, this.getPosition().z + 100 * scaledDiam / 2);
 	};
 	
 	var p = Planet.prototype;
@@ -40,6 +41,10 @@ app.Planet = (function(){
 	p.getPosition = function(){
 		return this.mesh.position;
 	};
+	
+	p.getName = function(){
+		return this.info.name;
+	}
 	
 	p.addToScene = function(scene){
 		scene.add(this.mesh);

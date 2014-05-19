@@ -6,6 +6,11 @@ var app = app || {};
 
 app.main = {
     	// CONSTANT properties
+		ViewMode: {
+			FLY: 0,
+			PLANET: 1,
+			mode: 0
+		},
     	
 		// variable properties
 		renderer: undefined,
@@ -16,8 +21,13 @@ app.main = {
 		dt: 1/60,
 		controls: undefined,
 		
+		startPosition:undefined,
+		
+		infoBox:undefined,
+		
 		planet:undefined,
 		planets: [],
+		planetIndex: 0,
 		comets: [],
 		cometTimer: 0,
 		nextComet: 100,
@@ -32,6 +42,9 @@ app.main = {
 			console.log('init called');
 			this.loadData();
 			this.setupThreeJS();
+			this.infoBox = document.createElement('div');
+			this.infoBox.className = 'infoBox';
+			document.body.appendChild(this.infoBox);
 			this.setupWorld();
 			this.update();
 			
@@ -51,9 +64,19 @@ app.main = {
 					meshes.push(self.planets[i].getMesh());
 				}
 				var intersects = raycaster.intersectObjects(meshes);
-				console.log(intersects);
+				//console.log(intersects);
 				if(intersects.length > 0){
 					intersects[0].object.material.color = new THREE.Color(0xff0000);
+					for(var i = 0; i < self.planets.length; i++){
+						var p = self.planets[i];
+						var  p_mesh = p.getMesh();
+						if(p_mesh.id == intersects[0].object.id){
+							self.displayData(p);
+							self.moveTo(p.cameraPoint);
+							self.ViewMode.mode = self.ViewMode.PLANET;
+							self.planetIndex = i;
+						}
+					}
 				}
 			});
     	},
@@ -62,12 +85,36 @@ app.main = {
     update: function(){
     	// schedule next animation frame
     	app.animationID = requestAnimationFrame(this.update.bind(this));
+		
+		TWEEN.update();
     	
 		// PAUSED?
 		if (app.paused){
 			this.drawPauseScreen();
 			return;
 		 }
+		 
+		if(app.keydown[app.KEYBOARD.KEY_SPACE]){
+			console.log('space pressed');
+			$('.infoBox').empty();
+			this.moveTo(this.startPosition);
+			this.ViewMode.mode = this.ViewMode.FLY;
+		}
+		
+		if(app.keydown[app.KEYBOARD.KEY_LEFT] && this.ViewMode.mode == this.ViewMode.PLANET){
+			if(this.planetIndex > 0){
+				this.planetIndex--;
+				this.moveTo(this.planets[this.planetIndex].cameraPoint);
+				this.displayData(this.planets[this.planetIndex]);
+			}
+		}
+		if(app.keydown[app.KEYBOARD.KEY_RIGHT] && this.ViewMode.mode == this.ViewMode.PLANET){
+			if(this.planetIndex < this.planets.length - 1){
+				this.planetIndex++;
+				this.moveTo(this.planets[this.planetIndex].cameraPoint);
+				this.displayData(this.planets[this.planetIndex]);
+			}
+		}
 		 
 		 this.cometTimer++;
 		 if(this.cometTimer >= this.nextComet){
@@ -77,7 +124,8 @@ app.main = {
 		 }
 	
 		// UPDATE
-		this.controls.update(this.dt);
+		if(this.ViewMode.mode == this.ViewMode.FLY)
+			this.controls.update(this.dt);
 		//this.planet.rotation.y += 0.002;
 		for(var i = 0; i < this.comets.length; i++){
 			var comet = this.comets[i];
@@ -107,23 +155,26 @@ app.main = {
 	},
 	
 	setupThreeJS: function() {
-				this.scene = new THREE.Scene();
-				//this.scene.fog = new THREE.FogExp2(0x9db3b5, 0.002);
+		this.scene = new THREE.Scene();
+		//this.scene.fog = new THREE.FogExp2(0x9db3b5, 0.002);
+		
+		this.startPosition = new THREE.Vector3(1000, 0, 1000);
 
-				this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
-				this.camera.position.z = 400;
-				this.camera.lookAt(new THREE.Vector3(0,0,0));
-				//this.camera.rotation.y = -Math.PI;
+		this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+		this.camera.position.x = this.startPosition.x;
+		this.camera.position.z = this.startPosition.z;
+		this.camera.lookAt(new THREE.Vector3(this.startPosition.x,0,0));
+		//this.camera.rotation.y = -Math.PI;
 
-				this.renderer = new THREE.WebGLRenderer({antialias: true});
-				this.renderer.setSize( window.innerWidth, window.innerHeight );
-				this.renderer.shadowMapEnabled = true;
-				document.body.appendChild(this.renderer.domElement );
+		this.renderer = new THREE.WebGLRenderer({antialias: true});
+		this.renderer.setSize( window.innerWidth, window.innerHeight );
+		this.renderer.shadowMapEnabled = true;
+		document.body.appendChild(this.renderer.domElement );
 
-				this.controls = new THREE.FirstPersonControls(this.camera);
-				this.controls.movementSpeed = 100;
-				this.controls.lookSpeed = 0.1;
-				this.controls.autoForward = false;
+		this.controls = new THREE.FirstPersonControls(this.camera);
+		this.controls.movementSpeed = 500;
+		this.controls.lookSpeed = 0.1;
+		this.controls.autoForward = false;
 	},
 	
 	setUpPlanets: function(data){
@@ -215,15 +266,16 @@ app.main = {
 		this.scene.add(sunlight);
 		
 		//lens flare
-		this.textureFlare0 = THREE.ImageUtils.loadTexture("textures/lensflare0.png");
-		this.textureFlare2 = THREE.ImageUtils.loadTexture("textures/lensflare2.png");
-		this.textureFlare3 = THREE.ImageUtils.loadTexture("textures/lensflare3.png");
+		//this.textureFlare0 = THREE.ImageUtils.loadTexture("textures/lensflare0.png");
+		//this.textureFlare2 = THREE.ImageUtils.loadTexture("textures/lensflare2.png");
+		//this.textureFlare3 = THREE.ImageUtils.loadTexture("textures/lensflare3.png");
 		
-		this.addLight(0.55, 0.9, 0.5, -150, 0, -500);
+		//this.addLight(0.55, 0.9, 0.5, -150, 0, -500);
 		
 		
 	},
 	
+	/*
 	addLight: function(h, s, l, x, y, z){
 		var light = new THREE.PointLight(0xffffff, 1.5, 4500);
 		light.color.setHSL(h, s, l);
@@ -248,7 +300,9 @@ app.main = {
 		this.scene.add(lensFlare);
 		
 	},
+	*/
 	
+
 	lensFlareUpdateCallback: function(object){
 		var f, fl = object.lensFlares.length;
 		var flare;
@@ -274,59 +328,59 @@ app.main = {
 		this.comets.push(comet);
 	},
 	
-	doMouseDown: function(e){
+	moveTo: function(point){
+		new TWEEN.Tween(this.camera.position)
+			.to({x:point.x, y:point.y, z:point.z}, 2000)
+			.easing(TWEEN.Easing.Exponential.InOut)
+			.start();
+		new TWEEN.Tween(this.camera.rotation)
+			.to({x:0, y:0, z:0}, 2000)
+			.easing(TWEEN.Easing.Exponential.InOut)
+			.start();
+	},
 	
-			e.preventDefault();
-			
-			var projector = new THREE.Projector();
-			
-			var vector = new THREE.Vector3((event.clientX / window.innerWidth) * 2 - 1, -(event.clientY / window.innerHeight) * 2 + 1, 0.5);
-			
-			console.log(this.camera);
-			projector.unprojectVector(vector, this.camera);
-			
-			var raycaster = new THREE.Raycaster(this.camera.position, vector.sub(this.camera.position).normalize());
-			var meshes = [];
-			for(var i = 0; i < this.planets.length; i++){
-				meshes.push(this.planets[i].getMesh());
+	displayData: function(p){
+		$('.infoBox').empty();
+		var info = p.info;
+		for(var i = 0; i < 11; i++){
+			var text = document.createElement('div');
+			text.style.position = 'absolute';
+			text.style.width = 200;
+			text.style.height = 100;
+			text.style.color = 'white';
+			switch(i){
+				case 0:
+					text.innerHTML = 'Name --- ' + info.name;
+					break;
+				case 1:
+					text.innerHTML = 'Diameter --- ' + info.diameter + 'km';
+					break;
+				case 2:
+					text.innerHTML = 'Distance From Sun --- ' + info.distance + 'AU';
+					break;
+				case 3:
+					text.innerHTML = 'Orbital Eccentricity --- ' + info.eccentricity;
+					break;
+				case 4:
+					text.innerHTML = 'Number of Moons --- ' + info.numMoons;
+					break;
+				case 5:
+					text.innerHTML = 'Orbital Period --- ' + info.orbPeriod + ' years';
+					break;
+				case 6:
+					text.innerHTML = 'Rotational Period --- ' + info.rotPeriod + ' days';
+					break;
+				case 7:
+					text.innerHTML = 'Max Temperature --- ' + info.tempMax + 'C';
+					break;
+				case 8:
+					text.innerHTML = 'Min Temperature --- ' + info.tempMin + 'C';
+					break;
 			}
-			var intersects = raycaster.intersectObjects([]);
-			//if(intersects.length > 0){
-				//intersects[0].object.material.color = new THREE.Color(0xff0000);
-			//}
-		/*
-		var projector = new THREE.Projector(); 
-		
-		var vector = new THREE.Vector3(( e.clientX / window.innerWidth ) * 2 - 1, -( e.clientY / window.innerHeight ) * 2 + 1, 0.5); 
-		console.log("Vector is x=" + vector.x + ",y=" + vector.y + ",z=" + vector.z);
- 
-		// 2D point converted to 3D point in world 
-		projector.unprojectVector(vector, this.camera); 
-		console.log("Unprojected Vector x=" + vector.x + ",y=" + vector.y + ",z=" + vector.z); 
- 
-		// cast a ray from the camera to the 3D point we clicked on 
-		var raycaster = new THREE.Raycaster(this.camera.position, 
-		vector.sub(this.camera.position).normalize()); 
- 
-		// an array of objects we are checking for intersections 
-		// you’ll need to put your own objects here
-		var meshes = [];
-		for(var i = 0; i < this.planets.length; i++){
-			meshes.push(this.planets[i].getMesh());
+			text.style.top = ((24 * i) + 100) + 'px';
+			text.style.right = 100 + 'px';
+			this.infoBox.appendChild(text);
 		}
-		var intersects = raycaster.intersectObjects(meshes); 
- 
-		if (intersects.length > 0) { 
-			intersects[ 0 ].object.material.transparent = true; 
-			intersects[ 0 ].object.material.opacity = 0.3; 
-			// debug info 
-			console.log("distance=" + intersects[0].distance); 
-			console.log("point.x=" + intersects[0].point.x); 
-			console.log("point.y=" + intersects[0].point.y); 
-			console.log("face=" + intersects[0].face); 
-			console.log("faceIndex=" + intersects[0].faceIndex); 
-		}
-		*/
 	},
 	
 	drawPauseScreen: function(){
