@@ -16,6 +16,7 @@ app.KEYBOARD = {
 	"KEY_UP": 38, 
 	"KEY_RIGHT": 39, 
 	"KEY_DOWN": 40,
+	"KEY_R":82,
 	"KEY_SPACE": 32
 };
 
@@ -25,6 +26,7 @@ app.paused = false;
 
 // key daemon array
 app.keydown = [];
+app.pkeydown = [];
 
 (function(){
 	var queue = new createjs.LoadQueue(false);

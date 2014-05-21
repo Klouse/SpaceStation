@@ -11,6 +11,13 @@ app.main = {
 			PLANET: 1,
 			mode: 0
 		},
+		
+		MIN_X: -100,
+		MAX_X: 20000,
+		MIN_Y: -500, 
+		MAX_Y: 500,
+		MIN_Z: -2000,
+		MAX_Z: 2000,
     	
 		// variable properties
 		renderer: undefined,
@@ -24,6 +31,7 @@ app.main = {
 		startPosition:undefined,
 		
 		infoBox:undefined,
+		instrBox:undefined,
 		
 		planet:undefined,
 		planets: [],
@@ -45,10 +53,16 @@ app.main = {
 			this.infoBox = document.createElement('div');
 			this.infoBox.className = 'infoBox';
 			document.body.appendChild(this.infoBox);
+			this.instrBox = document.createElement('div');
+			this.instrBox.className = 'instrBox';
+			document.body.appendChild(this.instrBox);
+			this.changeInstructions()
 			this.setupWorld();
 			this.update();
 			
 			var self = this;
+			
+			//Raycast and see if it hits a planet
 			$(document).mousedown(function(e){
 				e.preventDefault();
 			
@@ -66,7 +80,6 @@ app.main = {
 				var intersects = raycaster.intersectObjects(meshes);
 				//console.log(intersects);
 				if(intersects.length > 0){
-					intersects[0].object.material.color = new THREE.Color(0xff0000);
 					for(var i = 0; i < self.planets.length; i++){
 						var p = self.planets[i];
 						var  p_mesh = p.getMesh();
@@ -74,11 +87,21 @@ app.main = {
 							self.displayData(p);
 							self.moveTo(p.cameraPoint);
 							self.ViewMode.mode = self.ViewMode.PLANET;
+							self.changeInstructions();
 							self.planetIndex = i;
 						}
 					}
 				}
 			});
+			
+			/*
+			window.addEventListener( 'resize', function(){
+				self.camera.aspect = window.innerWidth / window.innerHeight;
+				self.camera.updateProjectionMatrix();
+
+				self.renderer.setSize( window.innerWidth, window.innerHeight );
+			});
+			*/
     	},
     	
     	
@@ -86,6 +109,7 @@ app.main = {
     	// schedule next animation frame
     	app.animationID = requestAnimationFrame(this.update.bind(this));
 		
+		//Update any tweens currently happening
 		TWEEN.update();
     	
 		// PAUSED?
@@ -93,77 +117,100 @@ app.main = {
 			this.drawPauseScreen();
 			return;
 		 }
-		 
+		
+		//Reset camera position
 		if(app.keydown[app.KEYBOARD.KEY_SPACE]){
-			console.log('space pressed');
 			$('.infoBox').empty();
 			this.moveTo(this.startPosition);
 			this.ViewMode.mode = this.ViewMode.FLY;
+			this.changeInstructions();
 		}
 		
+		//Cycle between planets when in planet viewing mode
 		if(app.keydown[app.KEYBOARD.KEY_LEFT] && this.ViewMode.mode == this.ViewMode.PLANET){
-			if(this.planetIndex > 0){
-				this.planetIndex--;
-				this.moveTo(this.planets[this.planetIndex].cameraPoint);
-				this.displayData(this.planets[this.planetIndex]);
+			if(!app.pkeydown[app.KEYBOARD.KEY_LEFT]){
+				if(this.planetIndex > 0){
+					this.planetIndex--;
+					this.moveTo(this.planets[this.planetIndex].cameraPoint);
+					this.displayData(this.planets[this.planetIndex]);
+				}
 			}
 		}
 		if(app.keydown[app.KEYBOARD.KEY_RIGHT] && this.ViewMode.mode == this.ViewMode.PLANET){
-			if(this.planetIndex < this.planets.length - 1){
-				this.planetIndex++;
-				this.moveTo(this.planets[this.planetIndex].cameraPoint);
-				this.displayData(this.planets[this.planetIndex]);
+			if(!app.pkeydown[app.KEYBOARD.KEY_RIGHT]){
+				if(this.planetIndex < this.planets.length - 1){
+					this.planetIndex++;
+					this.moveTo(this.planets[this.planetIndex].cameraPoint);
+					this.displayData(this.planets[this.planetIndex]);
+				}
 			}
 		}
-		 
-		 this.cometTimer++;
-		 if(this.cometTimer >= this.nextComet){
-			//this.spawnComet();
+		
+		//Keep the camera from going too far
+		this.constrainCamera(this.MIN_X, this.MAX_X, this.MIN_Y, this.MAX_Y, this.MIN_Z, this.MAX_Z);
+		
+		//Spawn comets
+		this.cometTimer++;
+		if(this.cometTimer >= this.nextComet){
+			this.spawnComet();
 			this.cometTimer = 0;
 			this.nextComet = Math.random() * 100 + 100;
-		 }
+		}
 	
-		// UPDATE
+		//Update controls
 		if(this.ViewMode.mode == this.ViewMode.FLY)
 			this.controls.update(this.dt);
-		//this.planet.rotation.y += 0.002;
+		
+		//Update and clean comets array
 		for(var i = 0; i < this.comets.length; i++){
 			var comet = this.comets[i];
 			comet.update();
-			if(comet.getPosition().x < -100){
+			if(comet.getPosition().x < this.MIN_X || comet.getPosition().x > this.MAX_X){
 				comet.removeFromScene(this.scene);
 			}
-			
-			this.comets = this.comets.filter(function(o){
-				if(!o.dead) return o;
-			});
+			if(comet.getPosition().y < this.MIN_Y || comet.getPosition().y > this.MAX_Y){
+				comet.removeFromScene(this.scene);
+			}
+			if(comet.getPosition().z < this.MIN_Z || comet.getPosition().z > this.MAX_Z){
+				comet.removeFromScene(this.scene);
+			}
 		}
 		
-		// DRAW	
+		for(var i = 0; i < this.planets.length; i++){
+			var planet = this.planets[i];
+			planet.update();
+		}
+		
+		this.comets = this.comets.filter(function(o){
+				if(!o.dead) return o;
+		});
+		
+		// Render
 		this.renderer.render(this.scene, this.camera);
 		
+		app.pkeydown = app.keydown.slice(0);
 	},
 	
+	//Load the json with the planet data and create the planets
 	loadData: function(){
 		var self = this;
 		var data = $.getJSON("data/planets.json", function(json){
 			self.setUpPlanets(json);
 		});
 		//console.log(data);
-		
-		//this.setUpPlanets(data.responseJSON);
 	},
 	
+	//Set up the Scene, Camera, Controls, and Renderer
 	setupThreeJS: function() {
 		this.scene = new THREE.Scene();
 		//this.scene.fog = new THREE.FogExp2(0x9db3b5, 0.002);
 		
-		this.startPosition = new THREE.Vector3(1000, 0, 1000);
+		this.startPosition = new THREE.Vector3(200, 0, 1000);
 
 		this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
 		this.camera.position.x = this.startPosition.x;
 		this.camera.position.z = this.startPosition.z;
-		this.camera.lookAt(new THREE.Vector3(this.startPosition.x,0,0));
+		this.camera.lookAt(new THREE.Vector3(0, 0, 0));
 		//this.camera.rotation.y = -Math.PI;
 
 		this.renderer = new THREE.WebGLRenderer({antialias: true});
@@ -177,6 +224,7 @@ app.main = {
 		this.controls.autoForward = false;
 	},
 	
+	//Create the planets based on json data
 	setUpPlanets: function(data){
 		var planetData = data.planets;
 		for(var i = 0; i < planetData.length; i++){
@@ -185,7 +233,8 @@ app.main = {
 			this.planets.push(p);
 		}
 	},
-			
+	
+	//Create everything in the solar system	
 	setupWorld: function() {
 		/*
 		var p_geo = new THREE.SphereGeometry(100, 32, 32);
@@ -237,6 +286,7 @@ app.main = {
 		this.scene.add(moon);
 		*/
 		
+		//Create the sun
 		var s_geo = new THREE.SphereGeometry(100, 32, 32);
 		var s_mat = new THREE.MeshBasicMaterial({color:0xffff00});
 		var sun = new THREE.Mesh(s_geo, s_mat);
@@ -245,14 +295,14 @@ app.main = {
 		sun.position.z = 0;
 		this.scene.add(sun);
 				
-		// the "sun"
-		var light = new THREE.DirectionalLight(0xf9f1c2, 0.5);
+		//Add a directional light so not too dark
+		var light = new THREE.DirectionalLight(0x333377, 1.0);
 		light.position.set(450, 100, 50);
 		light.castShadow = true;
 		light.shadowMapWidth = 2048;
 		light.shadowMapHeight = 2048;
 		var d = 1000;
-		// "near" and "far" of shadows and camera
+		//"near" and "far" of shadows and camera
 		light.shadowCameraLeft = d;
 		light.shadowCameraRight = -d;
 		light.shadowCameraTop = d;
@@ -260,9 +310,9 @@ app.main = {
 		light.shadowCameraFar = 2500;
 		this.scene.add(light);
 				
-		// the "sun"
-		var sunlight = new THREE.PointLight(0xffff00, 2);
-		sunlight.position.set(-150, 0, -500);
+		//The light coming from the sun
+		var sunlight = new THREE.PointLight(0xffcc66, 1.0);
+		sunlight.position.set(0, 0, 0);
 		this.scene.add(sunlight);
 		
 		//lens flare
@@ -301,7 +351,6 @@ app.main = {
 		
 	},
 	*/
-	
 
 	lensFlareUpdateCallback: function(object){
 		var f, fl = object.lensFlares.length;
@@ -320,14 +369,18 @@ app.main = {
 		object.lensFlares[3].rotation = object.positionScreen.x * 0.5 + THREE.Math.degToRad(45);
 	},
 	
+	//Create a new comet at a random position in the scene
 	spawnComet: function(){
-		//console.log("Comet Spawned");
 		var comet = new app.Comet();
-		comet.setPosition(600, 0, 0);
+		var c_x = (Math.random() * (this.MAX_X - this.MIN_X)) + this.MIN_X;
+		var c_y = (Math.random() * (this.MAX_Y - this.MIN_Y)) + this.MIN_Y;
+		var c_z = (Math.random() * (this.MAX_Z - this.MIN_Z)) + this.MIN_Z;
+		comet.setPosition(c_x, c_y, c_z);
 		comet.addToScene(this.scene);
 		this.comets.push(comet);
 	},
 	
+	//Tweens the camera to a specified position
 	moveTo: function(point){
 		new TWEEN.Tween(this.camera.position)
 			.to({x:point.x, y:point.y, z:point.z}, 2000)
@@ -339,15 +392,27 @@ app.main = {
 			.start();
 	},
 	
+	//Keeps the camera from travelling too far in the scene
+	constrainCamera: function(minX, maxX, minY, maxY, minZ, maxZ){
+		if(this.camera.position.x < minX) this.camera.position.x = minX;
+		if(this.camera.position.x > maxX) this.camera.position.x = maxX;
+		if(this.camera.position.y < minY) this.camera.position.y = minY;
+		if(this.camera.position.y > maxY) this.camera.position.y = maxY;
+		if(this.camera.position.z < minZ) this.camera.position.z = minZ;
+		if(this.camera.position.z > maxZ) this.camera.position.z = maxZ;
+	},
+	
+	//Displays a div with all the planet data
 	displayData: function(p){
 		$('.infoBox').empty();
 		var info = p.info;
 		for(var i = 0; i < 11; i++){
 			var text = document.createElement('div');
 			text.style.position = 'absolute';
-			text.style.width = 200;
+			text.style.width = 300;
 			text.style.height = 100;
 			text.style.color = 'white';
+			text.style.fontFamily = 'Verdana';
 			switch(i){
 				case 0:
 					text.innerHTML = 'Name --- ' + info.name;
@@ -380,6 +445,34 @@ app.main = {
 			text.style.top = ((24 * i) + 100) + 'px';
 			text.style.right = 100 + 'px';
 			this.infoBox.appendChild(text);
+		}
+	},
+	
+	changeInstructions: function(){
+		$('.instrBox').empty();
+		if(this.ViewMode.mode == this.ViewMode.FLY){
+			var text = document.createElement('div');
+			text.style.position = 'absolute';
+			text.style.width = 500;
+			text.style.height = 100;
+			text.style.color = 'white';
+			text.style.fontFamily = 'Verdana';
+			text.innerHTML = 'Click on a planet to show info.  Space to reset camera';
+			text.style.top = (window.innerHeight - 50) + 'px';
+			text.style.right = (window.innerWidth / 2 - 250) + 'px';
+			this.instrBox.appendChild(text);
+		}
+		if(this.ViewMode.mode == this.ViewMode.PLANET){
+			var text = document.createElement('div');
+			text.style.position = 'absolute';
+			text.style.width = 500;
+			text.style.height = 100;
+			text.style.color = 'white';
+			text.style.fontFamily = 'Verdana';
+			text.innerHTML = 'Arrow keys to switch planets.  Space to reset camera';
+			text.style.top = (window.innerHeight - 50) + 'px';
+			text.style.right = (window.innerWidth / 2 - 250) + 'px';
+			this.instrBox.appendChild(text);
 		}
 	},
 	

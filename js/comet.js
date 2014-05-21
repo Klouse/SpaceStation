@@ -8,8 +8,8 @@ app.Comet = (function(){
 	function Comet(){
 		this.setUpMesh();
 		this.setUpParticleSystem();
-		this.xSpeed = Math.random() * -2;
-		this.ySpeed = Math.random() * -2;
+		this.xSpeed = Math.random() * 10 - 5;
+		this.ySpeed = Math.random() * 10 - 5;
 		this.dead = false;
 	};
 	
