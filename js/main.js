@@ -207,7 +207,7 @@ app.main = {
 		
 		this.startPosition = new THREE.Vector3(200, 0, 1000);
 
-		this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 10000 );
+		this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 55000 );
 		this.camera.position.x = this.startPosition.x;
 		this.camera.position.z = this.startPosition.z;
 		this.camera.lookAt(new THREE.Vector3(0, 0, 0));
@@ -314,6 +314,9 @@ app.main = {
 		var sunlight = new THREE.PointLight(0xffcc66, 1.0);
 		sunlight.position.set(0, 0, 0);
 		this.scene.add(sunlight);
+
+		//skybox
+		this.skyBox();
 		
 		//lens flare
 		//this.textureFlare0 = THREE.ImageUtils.loadTexture("textures/lensflare0.png");
@@ -351,6 +354,35 @@ app.main = {
 		
 	},
 	*/
+	skyBox: function(){
+		var urls = [
+		'textures/SkyBox/pos-x.png',
+		'textures/SkyBox/neg-x.png',
+		'textures/SkyBox/pos-y.png',
+		'textures/SkyBox/neg-y.png',
+		'textures/SkyBox/pos-z.png',
+		'textures/SkyBox/neg-z.png'
+		];
+
+		var cubemap = THREE.ImageUtils.loadTextureCube(urls); // load textures
+		cubemap.format = THREE.RGBFormat;
+
+		var shader = THREE.ShaderLib['cube']; // init cube shader from built-in lib
+		shader.uniforms['tCube'].value = cubemap; // apply textures to shader
+
+		// create shader material
+		var skyBoxMaterial = new THREE.ShaderMaterial( {
+		  fragmentShader: shader.fragmentShader,
+		  vertexShader: shader.vertexShader,
+		  uniforms: shader.uniforms,
+		  depthWrite: false,
+		  side: THREE.BackSide
+		});
+		console.log("skyBoxMaterial created for skybox");
+		
+		var skyBox = new THREE.Mesh( new THREE.CubeGeometry(50000, 50000, 50000), skyBoxMaterial);
+		this.scene.add(skyBox);
+	},
 
 	lensFlareUpdateCallback: function(object){
 		var f, fl = object.lensFlares.length;
