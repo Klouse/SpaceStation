@@ -43,6 +43,10 @@ app.main = {
 		textureFlare0:undefined,
 		textureFlare2:undefined,
 		textureFlare3:undefined,
+
+		manager:undefined,
+		objLoader:undefined,
+		imgLoader:undefined,
 		
 		
 		
@@ -56,7 +60,16 @@ app.main = {
 			this.instrBox = document.createElement('div');
 			this.instrBox.className = 'instrBox';
 			document.body.appendChild(this.instrBox);
-			this.changeInstructions()
+			this.changeInstructions();
+
+			//OBJ manager and loader
+			this.manager = new THREE.LoadingManager();
+			this.manager.onProgress = function ( item, loaded, total ) {
+				console.log( item, loaded, total );
+			};
+			this.imgLoader = new THREE.ImageLoader(this.manager);
+			this.objLoader = new THREE.OBJLoader(this.manager);
+
 			this.setupWorld();
 			this.update();
 			
@@ -245,25 +258,8 @@ app.main = {
 		this.planet.position.y = -50;
 		this.planet.position.z = 300;
 		this.scene.add(this.planet);
-		
-		var manager = new THREE.LoadingManager();
-		manager.onProgress = function ( item, loaded, total ) {
-			//console.log( item, loaded, total );
-		};
-		
-		var planet_t = new THREE.Texture();
-		
-		var loader = new THREE.ImageLoader(manager);
-		loader.load('textures/planet_uv.jpg', function(image){
-			planet_t.image = image;
-			planet_t.needsUpdate = true;
-			
-		});
 		*/
-		
 		/*
-		var loader = new THREE.OBJLoader(manager);
-		
 		var self = this;
 		loader.load('Models/planet.obj', function(object){
 			object.traverse(function(child){
@@ -315,8 +311,12 @@ app.main = {
 		sunlight.position.set(0, 0, 0);
 		this.scene.add(sunlight);
 
-		//skybox
+		//skybox function call
+		//creates skybox within function
 		this.skyBox();
+
+		//create space station
+		this.spaceStation();
 		
 		//lens flare
 		//this.textureFlare0 = THREE.ImageUtils.loadTexture("textures/lensflare0.png");
@@ -355,6 +355,7 @@ app.main = {
 	},
 	*/
 	skyBox: function(){
+		//load the six different side of the box
 		var urls = [
 		'textures/SkyBox/pos-x.png',
 		'textures/SkyBox/neg-x.png',
@@ -364,13 +365,14 @@ app.main = {
 		'textures/SkyBox/neg-z.png'
 		];
 
+		//wrap the cube texture
 		var cubemap = THREE.ImageUtils.loadTextureCube(urls); // load textures
 		cubemap.format = THREE.RGBFormat;
 
 		var shader = THREE.ShaderLib['cube']; // init cube shader from built-in lib
 		shader.uniforms['tCube'].value = cubemap; // apply textures to shader
 
-		// create shader material
+		// create shader material for box
 		var skyBoxMaterial = new THREE.ShaderMaterial( {
 		  fragmentShader: shader.fragmentShader,
 		  vertexShader: shader.vertexShader,
@@ -378,10 +380,32 @@ app.main = {
 		  depthWrite: false,
 		  side: THREE.BackSide
 		});
-		console.log("skyBoxMaterial created for skybox");
-		
+		//create skybox and add to scene
 		var skyBox = new THREE.Mesh( new THREE.CubeGeometry(50000, 50000, 50000), skyBoxMaterial);
 		this.scene.add(skyBox);
+	},
+
+	spaceStation: function(){
+		//texture load
+		var stationTexture = new THREE.Texture();
+		this.imgLoader.load( 'textures/station_UV.jpg', function(image){
+			stationTexture.image = image;
+			stationTexture.needsUpdate = true;
+
+		});
+		var self = this;
+
+		//model load
+		this.objLoader.load('models/station.obj', function(object){
+			object.traverse(function(child){
+				if (child instanceof THREE.Mesh){
+					child.material.map = stationTexture;
+				}
+			});
+			self.scene.add(object);
+		})
+
+
 	},
 
 	lensFlareUpdateCallback: function(object){
@@ -403,7 +427,7 @@ app.main = {
 	
 	//Create a new comet at a random position in the scene
 	spawnComet: function(){
-		var comet = new app.Comet();
+		var comet = new app.Comet(this.imgLoader, this.objLoader);
 		var c_x = (Math.random() * (this.MAX_X - this.MIN_X)) + this.MIN_X;
 		var c_y = (Math.random() * (this.MAX_Y - this.MIN_Y)) + this.MIN_Y;
 		var c_z = (Math.random() * (this.MAX_Z - this.MIN_Z)) + this.MIN_Z;

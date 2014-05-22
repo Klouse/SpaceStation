@@ -5,8 +5,8 @@
 var app = app || {};
 
 app.Comet = (function(){
-	function Comet(){
-		this.setUpMesh();
+	function Comet(imgLoader, objLoader){
+		this.setUpMesh(imgLoader, objLoader);
 		this.setUpParticleSystem();
 		this.xSpeed = Math.random() * 10 - 5;
 		this.ySpeed = Math.random() * 10 - 5;
@@ -15,11 +15,31 @@ app.Comet = (function(){
 	
 	var p = Comet.prototype;
 	
-	p.setUpMesh = function(){
+	p.setUpMesh = function(imgLoader, objLoader){
+		//load comet texture
+		var cometTexture = new THREE.Texture();
+		imgLoader.load('textures/comet_UV.jpg', function(image){
+			cometTexture.image = image;
+			cometTexture.needsUpdate = true;
+		});
+		//load comet model
+		var self = this;
+		objLoader.load('models/comet.obj', function(object){
+			object.traverse(function(child){
+				if(child instanceof THREE.Mesh){
+					child.material.map = cometTexture;
+				}
+			});
+			self.cometObj = object;
+			object.receiveShadow = true;
+				
+		});
+		/*
 		var geo = new THREE.SphereGeometry(5, 16, 16);
 		var mat = new THREE.MeshBasicMaterial({color:0x0000ff});
 		this.mesh = new THREE.Mesh(geo, mat);
-		this.mesh.receiveShadow = true;
+		this.mesh.recieveShadow = true;
+		*/
 	};
 	
 	p.setUpParticleSystem = function(){
@@ -28,9 +48,9 @@ app.Comet = (function(){
 	}
 	
 	p.setPosition = function(x, y, z){
-		this.mesh.position.x = x;
-		this.mesh.position.y = y;
-		this.mesh.position.z = z;
+		this.cometObj.position.x = x;
+		this.cometObj.position.y = y;
+		this.cometObj.position.z = z;
 		
 		this.pSystem.position.x = x;
 		this.pSystem.position.y = y;
@@ -38,35 +58,37 @@ app.Comet = (function(){
 		
 	};
 	
+	/*
 	p.setColor = function(r, g, b){
 		var c = new THREE.Color(r, g, b);
-		this.mesh.material.color = c;
+		this.cometObj.material.color = c;
 	}
-	
+	*/
+
 	p.getMesh = function(){
-		return this.mesh;
+		return this.cometObj;
 	};
 	
 	p.getPosition = function(){
-		return this.mesh.position;
+		return this.cometObj.position;
 	}
 	
 	p.addToScene = function(scene){
-		scene.add(this.mesh);
+		scene.add(this.cometObj);
 		scene.add(this.pSystem);
 	};
 	
 	p.removeFromScene = function(scene){
-		scene.remove(this.mesh);
+		scene.remove(this.cometObj);
 		scene.remove(this.pSystem);
 		this.dead = true;
 	}
 	
 	p.update = function(){
-		this.mesh.position.x += this.xSpeed;
+		this.cometObj.position.x += this.xSpeed;
 		this.pSystem.position.x += this.xSpeed;
 		
-		this.mesh.position.y += this.ySpeed;
+		this.cometObj.position.y += this.ySpeed;
 		this.pSystem.position.y += this.ySpeed;
 	};
 	
