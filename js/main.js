@@ -69,6 +69,8 @@ app.main = {
 			};
 			this.imgLoader = new THREE.ImageLoader(this.manager);
 			this.objLoader = new THREE.OBJLoader(this.manager);
+			//createjs.Sound.addEventListener("loadComplete", playBackground);
+			//createjs.Sound.registerManifest(this.manifest, this.audioPath);
 
 			this.setupWorld();
 			this.update();
@@ -326,6 +328,11 @@ app.main = {
 		//this.addLight(0.55, 0.9, 0.5, -150, 0, -500);
 		
 		
+	},
+
+	playBackground: function(){
+		//play background music
+		createjs.Sound.play(event.src);
 	},
 	
 	/*

@@ -20,6 +20,12 @@ app.KEYBOARD = {
 	"KEY_SPACE": 32
 };
 
+app.audioPath = "audio/";
+app.manifest = [
+	{id:"Music", src:"DST-2ndBallad.mp3"},
+	{id:"planet", src:"planet_click.mp3"}
+];
+
 // properties of app
 app.animationID = undefined;
 app.paused = false;
@@ -34,6 +40,7 @@ app.pkeydown = [];
 	queue.on("complete", complete, this);
 	queue.loadFile("js/lib/three.min.js");
 	queue.loadFile("js/lib/tween.min.js");
+	queue.loadFile("js/lib/sound.min.js");
 	queue.loadFile("js/loaders/OBJLoader.js");
 	queue.loadFile("js/lib/FirstPersonControls.js");
 	queue.loadFile("js/planet.js");
