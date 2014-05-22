@@ -458,7 +458,7 @@ app.main = {
 					text.innerHTML = 'Number of Moons --- ' + info.numMoons;
 					break;
 				case 5:
-					text.innerHTML = 'Orbital Period --- ' + info.orbPeriod + ' years';
+					text.innerHTML = 'Orbital Period --- ' + info.orbPeriod + ' year(s)';
 					break;
 				case 6:
 					text.innerHTML = 'Rotational Period --- ' + info.rotPeriod + ' days';
