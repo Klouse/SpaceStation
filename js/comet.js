@@ -43,10 +43,10 @@ app.Comet = (function(){
 	};
 	
 	p.setUpParticleSystem = function(){
-		//vertexTexture = THREE.ImageUtils.loadTexture('textures/gradient_comet_vertex.jpg');
 		this.pSystem = new THREE.ParticleSystem(new THREE.SphereGeometry(15, 16, 16));
 	}
 	
+	//Sets the position of the comet
 	p.setPosition = function(x, y, z){
 		this.cometObj.position.x = x;
 		this.cometObj.position.y = y;
@@ -57,13 +57,6 @@ app.Comet = (function(){
 		this.pSystem.position.z = z;
 		
 	};
-	
-	/*
-	p.setColor = function(r, g, b){
-		var c = new THREE.Color(r, g, b);
-		this.cometObj.material.color = c;
-	}
-	*/
 
 	p.getMesh = function(){
 		return this.cometObj;
@@ -84,6 +77,7 @@ app.Comet = (function(){
 		this.dead = true;
 	}
 	
+	//Moves the comet across the scene
 	p.update = function(){
 		this.cometObj.position.x += this.xSpeed;
 		this.pSystem.position.x += this.xSpeed;
