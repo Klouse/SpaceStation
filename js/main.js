@@ -39,19 +39,16 @@ app.main = {
 		comets: [],
 		cometTimer: 0,
 		nextComet: 100,
-		
-		textureFlare0:undefined,
-		textureFlare2:undefined,
-		textureFlare3:undefined,
 
 		manager:undefined,
 		objLoader:undefined,
 		imgLoader:undefined,
 		
 		
-		
+		//Starting code
     	init : function() {
-			console.log('init called');
+		
+			//Set up everything
 			this.loadData();
 			this.setupThreeJS();
 			this.infoBox = document.createElement('div');
@@ -107,6 +104,7 @@ app.main = {
 				}
 			});
 			
+			//Being weird for no reson
 			/*
 			window.addEventListener( 'resize', function(){
 				self.camera.aspect = window.innerWidth / window.innerHeight;
@@ -117,7 +115,7 @@ app.main = {
 			*/
     	},
     	
-    	
+    //Repeating update loop
     update: function(){
     	// schedule next animation frame
     	app.animationID = requestAnimationFrame(this.update.bind(this));
@@ -165,7 +163,7 @@ app.main = {
 		//Spawn comets
 		this.cometTimer++;
 		if(this.cometTimer >= this.nextComet){
-			this.spawnComet();
+			//this.spawnComet();
 			this.cometTimer = 0;
 			this.nextComet = Math.random() * 100 + 100;
 		}
@@ -188,15 +186,15 @@ app.main = {
 				comet.removeFromScene(this.scene);
 			}
 		}
+		this.comets = this.comets.filter(function(o){
+				if(!o.dead) return o;
+		});
 		
+		//Update planets
 		for(var i = 0; i < this.planets.length; i++){
 			var planet = this.planets[i];
 			planet.update();
 		}
-		
-		this.comets = this.comets.filter(function(o){
-				if(!o.dead) return o;
-		});
 		
 		// Render
 		this.renderer.render(this.scene, this.camera);
@@ -250,16 +248,6 @@ app.main = {
 	//Create everything in the solar system	
 	setupWorld: function() {
 		/*
-		var p_geo = new THREE.SphereGeometry(100, 32, 32);
-		var p_mat = new THREE.MeshPhongMaterial({color:0xff0000});
-		this.planet = new THREE.Mesh(p_geo, p_mat);
-		this.planet.receiveShadow = true;
-		this.planet.position.x = -100;
-		this.planet.position.y = -50;
-		this.planet.position.z = 300;
-		this.scene.add(this.planet);
-		*/
-		/*
 		var self = this;
 		loader.load('Models/planet.obj', function(object){
 			object.traverse(function(child){
@@ -271,20 +259,15 @@ app.main = {
 			object.position.y = -80;
 			self.scene.add(object);
 		});
-		
-		var m_geo = new THREE.SphereGeometry(50, 32, 32);
-		var m_mat = new THREE.MeshPhongMaterial({color:0x444444});
-		var moon = new THREE.Mesh(m_geo, m_mat);
-		moon.receiveShadow = true;
-		moon.position.x = 200;
-		moon.position.y = 0;
-		moon.position.z = 100;
-		this.scene.add(moon);
 		*/
 		
 		//Create the sun
+		//Texture from: https://subversion.assembla.com/svn/planetsavers/trunk/PlanetSaver/Assets/Textures/star_textures/classG_star/
+		var texture = THREE.ImageUtils.loadTexture('textures/Sun_uv.png');
+		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+		texture.anistropy = 16;
+		var s_mat = new THREE.MeshBasicMaterial({map: texture, color:0xffffff, shininess: 10});
 		var s_geo = new THREE.SphereGeometry(100, 32, 32);
-		var s_mat = new THREE.MeshBasicMaterial({color:0xffff00});
 		var sun = new THREE.Mesh(s_geo, s_mat);
 		sun.position.x = 0;
 		sun.position.y = 0;
@@ -317,43 +300,9 @@ app.main = {
 
 		//create space station
 		this.spaceStation();
-		
-		//lens flare
-		//this.textureFlare0 = THREE.ImageUtils.loadTexture("textures/lensflare0.png");
-		//this.textureFlare2 = THREE.ImageUtils.loadTexture("textures/lensflare2.png");
-		//this.textureFlare3 = THREE.ImageUtils.loadTexture("textures/lensflare3.png");
-		
-		//this.addLight(0.55, 0.9, 0.5, -150, 0, -500);
-		
-		
 	},
 	
-	/*
-	addLight: function(h, s, l, x, y, z){
-		var light = new THREE.PointLight(0xffffff, 1.5, 4500);
-		light.color.setHSL(h, s, l);
-		light.position.set(x, y, z);
-		this.scene.add(light);
-		
-		var flareColor = new THREE.Color(0xffffff);
-		flareColor.setHSL(h, s, l + 0.5);
-		
-		var lensFlare = new THREE.LensFlare(this.textureFlare0, 700, 0.0, THREE.AdditiveBlending, flareColor);
-		
-		lensFlare.add(this.textureFlare2, 512, 0.0, THREE.AdditiveBlending);
-		lensFlare.add(this.textureFlare2, 512, 0.0, THREE.AdditiveBlending);
-		lensFlare.add(this.textureFlare2, 512, 0.0, THREE.AdditiveBlending);
-		lensFlare.add(this.textureFlare3, 60, 0.6, THREE.AdditiveBlending);
-		lensFlare.add(this.textureFlare3, 70, 0.7, THREE.AdditiveBlending);
-		lensFlare.add(this.textureFlare3, 120, 0.9, THREE.AdditiveBlending);
-		lensFlare.add(this.textureFlare3, 70, 1.0, THREE.AdditiveBlending);
-		
-		lensFlare.customUpdateCallback = this.lensFlareUpdateCallback;
-		lensFlare.position = light.position;
-		this.scene.add(lensFlare);
-		
-	},
-	*/
+	//Make the skybox
 	skyBox: function(){
 		//load the six different side of the box
 		var urls = [
@@ -384,7 +333,8 @@ app.main = {
 		var skyBox = new THREE.Mesh( new THREE.CubeGeometry(50000, 50000, 50000), skyBoxMaterial);
 		this.scene.add(skyBox);
 	},
-
+	
+	//Create the space station
 	spaceStation: function(){
 		//texture load
 		var stationTexture = new THREE.Texture();
@@ -407,7 +357,8 @@ app.main = {
 
 
 	},
-
+	
+	//Causing loop unrolls when deleted
 	lensFlareUpdateCallback: function(object){
 		var f, fl = object.lensFlares.length;
 		var flare;
@@ -504,6 +455,7 @@ app.main = {
 		}
 	},
 	
+	//Displays the different instructions 
 	changeInstructions: function(){
 		$('.instrBox').empty();
 		if(this.ViewMode.mode == this.ViewMode.FLY){
@@ -530,10 +482,6 @@ app.main = {
 			text.style.right = (window.innerWidth / 2 - 250) + 'px';
 			this.instrBox.appendChild(text);
 		}
-	},
-	
-	drawPauseScreen: function(){
-		// do something pause-like if you want
 	}
 	
 	

@@ -17,6 +17,7 @@ app.Planet = (function(){
 	
 	var p = Planet.prototype;
 	
+	//Create the geometry and 
 	p.setUpMesh = function(){
 		//Textures taken from:
 		//Mercury: http://astrogeology.usgs.gov
@@ -27,7 +28,7 @@ app.Planet = (function(){
 		//Saturn: http://astrogeology.usgs.gov
 		//Uranus: http://img-new.cgtrader.com/items/23540/large_uranus_3d_model_blend_e0c39188-f855-4dce-a82e-f4222623e483.jpg
 		//Neptune: http://www.planetaryvisions.com/images_new/37.jpg
-		//Pluto:
+		//Pluto: http://www.kaneva.com/mykaneva/PictureDetail.aspx?assetId=5188365
 		var t_url = 'textures/' + this.info.name + '_uv.jpg'
 		var texture = THREE.ImageUtils.loadTexture(t_url);
 		texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
@@ -65,9 +66,9 @@ app.Planet = (function(){
 		scene.add(this.pSystem);
 	};
 	
+	//Removes planet from scene
 	p.removeFromScene = function(scene){
 		scene.remove(this.mesh);
-		scene.remove(this.pSystem);
 	};
 	
 	p.update = function(){
