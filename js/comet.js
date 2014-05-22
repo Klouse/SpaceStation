@@ -16,7 +16,8 @@ app.Comet = (function(){
 	var p = Comet.prototype;
 	
 	p.setUpMesh = function(imgLoader, objLoader){
-		//load comet texture
+		/*
+		//load comet texture 
 		var cometTexture = new THREE.Texture();
 		imgLoader.load('textures/comet_UV.jpg', function(image){
 			cometTexture.image = image;
@@ -24,7 +25,7 @@ app.Comet = (function(){
 		});
 		//load comet model
 		var self = this;
-		objLoader.load('models/comet.obj', function(object){
+		objLoader.load('models/station.obj', function(object){
 			object.traverse(function(child){
 				if(child instanceof THREE.Mesh){
 					child.material.map = cometTexture;
@@ -34,12 +35,12 @@ app.Comet = (function(){
 			object.receiveShadow = true;
 				
 		});
-		/*
+		*/
 		var geo = new THREE.SphereGeometry(5, 16, 16);
 		var mat = new THREE.MeshBasicMaterial({color:0x0000ff});
 		this.mesh = new THREE.Mesh(geo, mat);
 		this.mesh.recieveShadow = true;
-		*/
+		
 	};
 	
 	p.setUpParticleSystem = function(){
@@ -48,9 +49,9 @@ app.Comet = (function(){
 	
 	//Sets the position of the comet
 	p.setPosition = function(x, y, z){
-		this.cometObj.position.x = x;
-		this.cometObj.position.y = y;
-		this.cometObj.position.z = z;
+		this.mesh.position.x = x;
+		this.mesh.position.y = y;
+		this.mesh.position.z = z;
 		
 		this.pSystem.position.x = x;
 		this.pSystem.position.y = y;
@@ -59,30 +60,30 @@ app.Comet = (function(){
 	};
 
 	p.getMesh = function(){
-		return this.cometObj;
+		return this.mesh;
 	};
 	
 	p.getPosition = function(){
-		return this.cometObj.position;
+		return this.mesh.position;
 	}
 	
 	p.addToScene = function(scene){
-		scene.add(this.cometObj);
+		scene.add(this.mesh);
 		scene.add(this.pSystem);
 	};
 	
 	p.removeFromScene = function(scene){
-		scene.remove(this.cometObj);
+		scene.remove(this.mesh);
 		scene.remove(this.pSystem);
 		this.dead = true;
 	}
 	
 	//Moves the comet across the scene
 	p.update = function(){
-		this.cometObj.position.x += this.xSpeed;
+		this.mesh.position.x += this.xSpeed;
 		this.pSystem.position.x += this.xSpeed;
 		
-		this.cometObj.position.y += this.ySpeed;
+		this.mesh.position.y += this.ySpeed;
 		this.pSystem.position.y += this.ySpeed;
 	};
 	

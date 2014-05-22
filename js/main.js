@@ -66,8 +66,16 @@ app.main = {
 			};
 			this.imgLoader = new THREE.ImageLoader(this.manager);
 			this.objLoader = new THREE.OBJLoader(this.manager);
-			//createjs.Sound.addEventListener("loadComplete", playBackground);
-			//createjs.Sound.registerManifest(this.manifest, this.audioPath);
+
+			//sound
+			//load and call handleFileLoad
+			createjs.Sound.addEventListener("fileload", this.handleFileLoad);
+			//register sound effects
+			createjs.Sound.registerManifest(
+				[{id:"music", src:"DST-2ndBallad.mp3"},
+				{id:"select", src:"select_planet.ogg"}]
+				,"audio/");
+
 
 			this.setupWorld();
 			this.update();
@@ -101,6 +109,7 @@ app.main = {
 							self.ViewMode.mode = self.ViewMode.PLANET;
 							self.changeInstructions();
 							self.planetIndex = i;
+							createjs.Sound.play("select");
 						}
 					}
 				}
@@ -127,7 +136,7 @@ app.main = {
     	
 		// PAUSED?
 		if (app.paused){
-			this.drawPauseScreen();
+			//this.drawPauseScreen();
 			return;
 		 }
 		
@@ -302,11 +311,12 @@ app.main = {
 
 		//create space station
 		this.spaceStation();
+
 	},
 
-	playBackground: function(){
-		//play background music
-		createjs.Sound.play(event.src);
+	handleFileLoad: function(event){
+		//once loaded play music
+		createjs.Sound.play("music");
 	},
 	
 	//Make the skybox
@@ -351,7 +361,7 @@ app.main = {
 
 		});
 		var self = this;
-
+		var stationModel;
 		//model load
 		this.objLoader.load('models/station.obj', function(object){
 			object.traverse(function(child){
@@ -359,7 +369,11 @@ app.main = {
 					child.material.map = stationTexture;
 				}
 			});
-			self.scene.add(object);
+			stationModel = object;
+			self.scene.add(stationModel);
+			stationModel.position.x = 420;
+			stationModel.position.y = 5;
+			stationModel.scale.set(.08,.08,.08);
 		})
 
 

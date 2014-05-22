@@ -21,10 +21,6 @@ app.KEYBOARD = {
 };
 
 app.audioPath = "audio/";
-app.manifest = [
-	{id:"Music", src:"DST-2ndBallad.mp3"},
-	{id:"planet", src:"planet_click.mp3"}
-];
 
 // properties of app
 app.animationID = undefined;
